@@ -1,0 +1,14 @@
+{
+	// Lista di estensioni suggerite per il progetto
+	"recommendations": [
+		"angular.ng-template",
+		"esbenp.prettier-vscode",
+		"Angular.ng-template",
+		"johnpapa.Angular2",
+		"kisstkondoros.vscode-gutter-preview",
+		"christian-kohler.path-intellisense",
+		"YoavBls.pretty-ts-errors",
+		"usernamehw.commands",
+		"formulahendry.auto-rename-tag"
+	]
+}

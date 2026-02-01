@@ -1,0 +1,22 @@
+<div class="modal-header border-0 py-2">
+	<h5 class="modal-title" translate>{{title}}</h5>
+	<i class="bi bi-x bi-lg fs-4 float-end ms-auto pointer" (click)="modal.close()"></i>
+</div>
+<div class="modal-body pt-0">
+	<div class="confirm-delete">
+		<p [innerHTML]="message"></p>
+		@if (erroreHttp) {
+			<div class="text-start">
+				Url: {{erroreHttp.url}}
+				<br />
+				Error Code: {{erroreHttp.status}} - {{erroreHttp.statusText}}
+				@if (erroreHttp.error) {
+					<pre [innerHTML]="erroreHttp.error | json"></pre>
+				}
+			</div>
+		}
+		<div class="d-flex w-100 mt-4 justify-content-center">
+			<button type="button" class="btn btn-outline-primary" (click)="modal.close()">{{close}}</button>
+		</div>
+	</div>
+</div>

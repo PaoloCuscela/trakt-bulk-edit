@@ -1,0 +1,219 @@
+/* Stile generico dei form */
+.form-group {
+	max-width: 100%;
+
+	label {
+		margin-bottom: 4px;
+	}
+
+	input {
+		@include input();
+	}
+
+	.form-check-input {
+		margin-right: 100%;
+		margin-top: 0;
+	}
+
+	.input-error-message {
+		display: none;
+		color: $danger;
+	}
+
+	::-webkit-calendar-picker-indicator {
+		background-image: url('../images/icons/calendar-days-solid.svg');
+	}
+
+	/* Bordino colorato sui campi obbligatori e non validi */
+	&:has(> .ng-invalid)::after,
+	&:has(.input-boolean-container > .ng-invalid)::after,
+	&:has(.input-number-container > .ng-invalid)::after,
+	&.ng-invalid::after {
+		content: '';
+		background-color: $primary;
+		width: 8px;
+		height: 38px;
+		position: relative;
+		display: block;
+		bottom: 38px;
+		margin-bottom: -38px;
+		left: 0;
+		border-radius: 8px 0 0 8px;
+	}
+
+	/* Campi numerici */
+	.input-number-container {
+		input[type='number'] {
+			@include input();
+			-webkit-appearance: textfield;
+			-moz-appearance: textfield;
+			appearance: textfield;
+		}
+		input[type='number']::-webkit-inner-spin-button,
+		input[type='number']::-webkit-outer-spin-button {
+			-webkit-appearance: none;
+		}
+		div.position-absolute {
+			right: 12px;
+			top: 6px;
+			button {
+				line-height: 10px;
+				font-size: 12px;
+			}
+		}
+		.step-button {
+			color: $primary;
+		}
+	}
+
+	/* Campi booleani */
+	.input-boolean-container {
+		input {
+			appearance: none;
+			@include button($primary, #ffffff, $primary);
+			border-radius: 0px;
+			width: -moz-available;
+			width: -webkit-fill-available;
+			width: stretch;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+
+			&:checked {
+				background-color: $primary;
+				color: #ffffff;
+			}
+
+			&:disabled {
+				background-color: color-mix(in srgb, $primary 40%, #ffffff);
+				pointer-events: none;
+
+				&:checked {
+					background-color: $primary;
+					color: color-mix(in srgb, $primary 40%, #ffffff);
+				}
+			}
+
+			&:first-child {
+				border-radius: 8px 0px 0px 8px;
+
+				&::before {
+					content: 'Sí';
+				}
+			}
+
+			&:last-child {
+				border-radius: 0px 8px 8px 0px;
+
+				&::before {
+					content: 'No';
+				}
+			}
+		}
+	}
+}
+
+/* Select */
+.ng-select {
+	&.ng-select-single .ng-select-container,
+	&.ng-select-multiple .ng-select-container {
+		@include input();
+	}
+
+	// Spaziatura testo opzione selezionata
+	.ng-select-container .ng-value-container {
+		padding-left: 0;
+	}
+
+	// Spaziatura testo ricerca
+	.ng-select-container .ng-value-container .ng-input {
+		margin-left: 10px;
+		padding-top: 5px;
+	}
+
+	// Personalizzazione frecce apertura chiusura
+	.ng-arrow-wrapper .ng-arrow {
+		display: none !important;
+	}
+	.ng-arrow-wrapper::after {
+		width: 15px;
+		height: 15px;
+		margin-left: 10px;
+		display: block;
+		content: '';
+		background-image: url('../images/icons/chevron-down-solid.svg');
+		background-size: contain;
+		background-repeat: no-repeat;
+	}
+	&.ng-select-opened > .ng-select-container .ng-arrow-wrapper::after {
+		background-image: url('../images/icons/chevron-up-solid.svg');
+	}
+
+	// Personalizzazione pannello di selezione delle option
+	.ng-dropdown-panel .ng-dropdown-panel-items .ng-option.ng-option-marked {
+		background-color: color-mix(in srgb, $primary 7.5%, #ffffff);
+	}
+	.ng-dropdown-panel .ng-dropdown-panel-items .ng-option.ng-option-selected,
+	.ng-dropdown-panel .ng-dropdown-panel-items .ng-option.ng-option-selected.ng-option-marked {
+		background-color: color-mix(in srgb, $primary 15%, #ffffff);
+	}
+
+	&.ng-select-disabled .ng-select-container,
+	&.ng-select-multiple.ng-select-disabled .ng-select-container {
+		background-color: color-mix(in srgb, $primary 40%, #ffffff);
+	}
+
+	&.ng-select-multiple .ng-select-container .ng-value-container .ng-placeholder {
+		top: auto;
+	}
+
+	&.ng-select-multiple.ng-select-disabled > .ng-select-container .ng-value-container .ng-value {
+		font-size: 0.9em;
+		margin-bottom: 5px;
+		color: #333;
+		background-color: #caddefd9;
+		border-radius: 4px;
+		margin-right: 5px;
+	}
+}
+
+/*
+  Gestione degli errori degli input di un form
+*/
+form.showErrors .form-group {
+	// Il bordino dell' obbligatorieta diventa rosso se ci sono errori
+	&:has(> .ng-invalid)::after,
+	&:has(.input-boolean-container > .ng-invalid)::after,
+	&:has(.input-number-container > .ng-invalid)::after,
+	&.ng-invalid::after {
+		background-color: $danger;
+	}
+
+	& .ng-invalid,                                            // L' input non valido sotto form-group
+  & .input-number-container:has( > .ng-invalid ),        // Il container degli input numerici che ha input non validi
+  & .input-boolean-container:not(:has( > .ng-valid )) {
+		// Il container delle checkbox booleane che non contiene elementi validi
+
+		border-color: $danger;
+
+		& input[type="checkbox"],   // Il bordo dei pulsanti delle checkbox
+    & .ng-select-container {
+			// Il bordo delle select
+			border-color: $danger;
+			color: $danger;
+		}
+
+		& .step-button {
+			color: $danger;
+		}
+
+		&::after {
+			background-color: $danger;
+			z-index: 3;
+		}
+
+		& + .input-error-message {
+			display: block;
+		}
+	}
+}

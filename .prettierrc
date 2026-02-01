@@ -1,0 +1,27 @@
+{
+  "singleQuote": true,
+  "bracketSpacing": true,
+  "printWidth": 140,
+  "bracketSameLine": true,
+  "singleAttributePerLine": false,
+  "arrowParens": "always",
+  "useTabs": true,
+  "tabWidth": 2,
+  "embeddedLanguageFormatting": "off",
+  "htmlWhitespaceSensitivity": "ignore",
+  "overrides": [
+    {
+      "files": "*.json",
+      "options": {
+        "printWidth": 200
+      }
+    },
+    {
+      "files": "*.html",
+      "options": {
+        "parser": "angular",
+        "printWidth": 180
+      }
+    }
+  ]
+}

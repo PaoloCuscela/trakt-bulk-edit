@@ -1,0 +1,157 @@
+<div class="container mt-4">
+	<div class="d-flex flex-column align-items-center mb-4">
+		<h2 class="fw-bold">Watched History</h2>
+		<p class="text-muted mb-3">Here you can modify episodes and movies you have already watched</p>
+
+		<!-- Toggle Menu -->
+		<div class="btn-group mb-3" role="group">
+			<input type="radio" class="btn-check" name="contentType" id="shows" value="shows" [ngModel]="contentType()" (ngModelChange)="contentType.set($event)" autocomplete="off" />
+			<label class="btn btn-dark px-4 fw-medium" [class.active]="contentType() === 'shows'" for="shows">TV Shows</label>
+
+			<input type="radio" class="btn-check" name="contentType" id="movies" value="movies" [ngModel]="contentType()" (ngModelChange)="contentType.set($event)" autocomplete="off" />
+			<label class="btn btn-dark px-4 fw-medium" [class.active]="contentType() === 'movies'" for="movies">Movies</label>
+		</div>
+	</div>
+
+	<div class="row mb-3 align-items-center g-2">
+		<div class="col-md-4">
+			<input
+				type="text"
+				class="form-control"
+				placeholder="Search {{ contentType() === 'shows' ? 'shows' : 'movies' }}..."
+				[ngModel]="searchTerm()"
+				(ngModelChange)="searchTerm.set($event)" />
+		</div>
+		<div class="col-md-4">
+			<select class="form-select" [ngModel]="completionFilter()" (ngModelChange)="completionFilter.set($event)" [disabled]="contentType() === 'movies'">
+				<option value="all">Filter by status: All</option>
+				<option value="completed">Completed</option>
+				<option value="not-completed">Not completed</option>
+			</select>
+		</div>
+		<div class="col-md-4">
+			<div class="input-group">
+				<span class="input-group-text border-end-0 bg-transparent">
+					<i class="bi bi-sort-down"></i>
+				</span>
+				<select class="form-select border-start-0 ps-0" [ngModel]="sortColumn()" (ngModelChange)="onSort($event)">
+					<option value="last_watched_at">Last watched</option>
+					<option value="title">Title</option>
+					<option value="year">Year</option>
+					<option value="completion" [disabled]="contentType() === 'movies'">Completion</option>
+				</select>
+				<button class="btn btn-outline-dark" (click)="toggleSortDirection()">
+					<i class="bi" [class.bi-arrow-down]="sortDirection() === 'desc'" [class.bi-arrow-up]="sortDirection() === 'asc'"></i>
+				</button>
+			</div>
+		</div>
+	</div>
+
+	@if (rawWatchedContent().length > 0) {
+		<div class="row g-3">
+			@for (item of sortedContent(); track getItemTraktId(item)) {
+				@let itemId = getItemTraktId(item);
+				<div class="col-12 col-lg-6 col-xl-4">
+					<div class="card h-100 border-0 overflow-hidden rounded-4" style="background-color: rgba(0, 0, 0, 0.2); cursor: pointer;" (click)="toggleSelection(itemId)">
+						<div class="d-flex h-100">
+							<!-- Left & Center: Checkbox + Info -->
+							<div class="flex-grow-1 p-3 d-flex align-items-center" style="min-width: 0;">
+								<!-- Checkbox -->
+								<div class="me-3">
+									<input
+										class="form-check-input fs-4"
+										type="checkbox"
+										[checked]="selectedContent().has(itemId)"
+										(change)="toggleSelection(itemId)"
+										(click)="$event.stopPropagation()"
+										id="check-{{ itemId }}"
+										style="cursor: pointer;" />
+								</div>
+
+								<!-- Info -->
+								<div class="flex-grow-1" style="min-width: 0;">
+									<h6 class="card-title fw-bold mb-1 text-truncate" [title]="getItemTitle(item)">{{ getItemTitle(item) }}</h6>
+
+									<div class="small text-muted mb-2">
+										<i class="bi bi-calendar4 me-1"></i>
+										{{ getItemYear(item) }}
+										<span class="mx-2">•</span>
+										<i class="bi bi-clock-history me-1"></i>
+										{{ item.last_watched_at | date: 'mediumDate' }}
+									</div>
+
+									@if (contentType() === 'shows') {
+										<!-- Progress -->
+										@let percentage = getCompletionPercentage(item);
+										<div class="d-flex align-items-center">
+											<div class="progress flex-grow-1 me-2" style="height: 6px;">
+												<div
+													class="progress-bar rounded-pill"
+													role="progressbar"
+													[style.width.%]="percentage"
+													[attr.aria-valuenow]="percentage"
+													aria-valuemin="0"
+													aria-valuemax="100"
+													[class.bg-success]="percentage === 100"
+													[class.bg-info]="percentage < 100"></div>
+											</div>
+											<span class="small fw-semibold" [class.text-success]="percentage === 100" [class.text-muted]="percentage < 100">{{ percentage }}%</span>
+										</div>
+										<div class="small text-muted mt-1" style="font-size: 0.75rem;">{{ getWatchedEpisodeCount(item) }} / {{ getItemAiredEpisodes(item) || '?' }} ep</div>
+									} @else {
+										<!-- Movie Plays -->
+										<div class="small text-muted">
+											<i class="bi bi-play-circle me-1"></i>
+											Seen {{ item.plays }} time{{ item.plays === 1 ? '' : 's' }}
+										</div>
+									}
+								</div>
+							</div>
+
+							<!-- Right: Poster -->
+							<div class="flex-shrink-0 position-relative" style="width: 92px;">
+								<app-poster [tmdbId]="getItemTmdbId(item)" [type]="contentType()" [fill]="true"></app-poster>
+							</div>
+						</div>
+					</div>
+				</div>
+			}
+		</div>
+	} @else {
+		<div class="d-flex justify-content-center p-5">
+			@if (refreshSignal() % 2 === 0) {
+				<!-- Simple trick to force dom refresh if needed, but actually switchMap handles loading state better if we used async pipe or exposed isloading -->
+				<div class="spinner-border" role="status">
+					<span class="visually-hidden">Loading...</span>
+				</div>
+			}
+		</div>
+	}
+
+	@if (selectedContent().size > 0) {
+		<div class="fixed-bottom bg-body-tertiary border-top shadow-lg p-3">
+			<div class="container d-flex justify-content-between align-items-center">
+				<div class="fw-bold">{{ selectedContent().size }} item{{ selectedContent().size === 1 ? '' : 's' }} selected</div>
+				<div class="d-flex gap-2">
+					@if (isProcessing()) {
+						<div class="d-flex align-items-center text-primary">
+							<span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+							<span role="status">Processing...</span>
+						</div>
+					} @else {
+						<button class="btn btn-outline-danger" (click)="resetProgress()">
+							<i class="bi bi-trash-fill me-1"></i>
+							Reset Progress
+						</button>
+						<button class="btn btn-outline-primary" (click)="markAsCompleted()">
+							<i class="bi bi-check-circle-fill me-1"></i>
+							Mark as Completed
+						</button>
+					}
+				</div>
+			</div>
+		</div>
+		<!-- Spacer to prevent content from being hidden behind the fixed bar -->
+		<div style="height: 80px;"></div>
+	}
+</div>

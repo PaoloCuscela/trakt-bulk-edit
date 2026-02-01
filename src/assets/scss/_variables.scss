@@ -1,0 +1,31 @@
+/* Colori */
+
+$theme-colors: (
+	primary: #c75eff,
+	secondary: #055480,
+	success: #00ac00,
+	info: #0dcaf0,
+	warning: #f47d0e,
+	danger: #ff4b4b,
+	light: #f8f9fa,
+	grey: #6c757d,
+	dark: #2b2b2b,
+);
+
+$primary: map-get($theme-colors, primary);
+$secondary: map-get($theme-colors, secondary);
+$success: map-get($theme-colors, success);
+$info: map-get($theme-colors, info);
+$warning: map-get($theme-colors, warning);
+$danger: map-get($theme-colors, danger);
+$light: map-get($theme-colors, light);
+$dark: map-get($theme-colors, dark);
+$grey: map-get($theme-colors, grey);
+
+@function theme-color($key) {
+	@return map-get($theme-colors, $key);
+}
+
+/* Font */
+$font-roboto: 'Roboto', sans-serif;
+$font-workSans: 'Work Sans', sans-serif;

@@ -1,0 +1,18 @@
+{
+  "/trakt-api": {
+    "target": "https://api.trakt.tv",
+    "secure": true,
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/trakt-api": ""
+    }
+  },
+  "/tmdb-api": {
+    "target": "https://api.themoviedb.org/3",
+    "secure": true,
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/tmdb-api": ""
+    }
+  }
+}

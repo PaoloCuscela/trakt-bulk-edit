@@ -1,0 +1,156 @@
+<div class="container mt-4">
+	<div class="d-flex flex-column align-items-center mb-4">
+		<h2 class="fw-bold">Watching Progress</h2>
+		<p class="text-muted mb-3">Here you can modify the progress of individual episodes or movies</p>
+
+		<!-- Toggle Menu -->
+		<div class="btn-group mb-3" role="group">
+			<input
+				type="radio"
+				class="btn-check"
+				name="contentType"
+				id="episodes"
+				value="episodes"
+				[ngModel]="contentType()"
+				(ngModelChange)="contentType.set($event)"
+				autocomplete="off" />
+			<label class="btn btn-dark px-4 fw-medium" [class.active]="contentType() === 'episodes'" for="episodes">TV Shows</label>
+
+			<input type="radio" class="btn-check" name="contentType" id="movies" value="movies" [ngModel]="contentType()" (ngModelChange)="contentType.set($event)" autocomplete="off" />
+			<label class="btn btn-dark px-4 fw-medium" [class.active]="contentType() === 'movies'" for="movies">Movies</label>
+		</div>
+	</div>
+
+	<div class="row mb-3 align-items-center g-2">
+		<div class="col-md-6">
+			<input type="text" class="form-control" placeholder="Search {{contentType()}}..." [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)" />
+		</div>
+		<div class="col-md-6">
+			<div class="input-group">
+				<span class="input-group-text border-end-0 bg-transparent">
+					<i class="bi bi-sort-down"></i>
+				</span>
+				<select class="form-select border-start-0 ps-0" [ngModel]="sortColumn()" (ngModelChange)="onSort($event)">
+					<option value="paused_at">Paused at</option>
+					<option value="title">Title</option>
+					<option value="year">Year</option>
+					<option value="progress">Progress</option>
+				</select>
+				<button class="btn btn-outline-dark" (click)="toggleSortDirection()">
+					<i class="bi" [class.bi-arrow-down]="sortDirection() === 'desc'" [class.bi-arrow-up]="sortDirection() === 'asc'"></i>
+				</button>
+			</div>
+		</div>
+	</div>
+
+	@if (rawWatchingContent().length > 0) {
+		<div class="row g-3">
+			@for (item of sortedContent(); track getItemPlaybackId(item)) {
+				@let itemId = getItemPlaybackId(item);
+				<div class="col-12 col-lg-6 col-xl-4">
+					<div class="card h-100 border-0 overflow-hidden rounded-4" style="background-color: rgba(0, 0, 0, 0.2); cursor: pointer;" (click)="toggleSelection(itemId)">
+						<div class="d-flex h-100">
+							<!-- Left & Center: Checkbox + Info -->
+							<div class="flex-grow-1 p-3 d-flex align-items-center" style="min-width: 0;">
+								<!-- Checkbox -->
+								<div class="me-3">
+									<input
+										class="form-check-input fs-4"
+										type="checkbox"
+										[checked]="selectedContent().has(itemId)"
+										(change)="toggleSelection(itemId)"
+										(click)="$event.stopPropagation()"
+										id="check-{{ itemId }}"
+										style="cursor: pointer;" />
+								</div>
+
+								<!-- Info -->
+								<div class="flex-grow-1" style="min-width: 0;">
+									<h6 class="card-title fw-bold mb-1 text-truncate" [title]="getItemTitle(item)">{{ getItemTitle(item) }}</h6>
+
+									@if (getItemSubtitle(item); as subtitle) {
+										<div class="small fw-bold text-info mb-1 text-truncate">{{ subtitle }}</div>
+									}
+
+									<div class="small text-muted mb-2">
+										<i class="bi bi-calendar4 me-1"></i>
+										{{ getItemYear(item) }}
+										<span class="mx-2">•</span>
+										<i class="bi bi-clock-history me-1"></i>
+										{{ item.paused_at | date: 'mediumDate' }}
+									</div>
+
+									<!-- Progress -->
+									@let percentage = getProgress(item);
+									<div class="d-flex align-items-center mb-1">
+										<div class="progress flex-grow-1 me-2" style="height: 6px;">
+											<div
+												class="progress-bar rounded-pill"
+												role="progressbar"
+												[style.width.%]="percentage"
+												[attr.aria-valuenow]="percentage"
+												aria-valuemin="0"
+												aria-valuemax="100"
+												[class.bg-success]="percentage === 100"
+												[class.bg-warning]="percentage < 100"></div>
+										</div>
+										<span class="small fw-semibold">{{ percentage }}%</span>
+									</div>
+
+									<div class="d-flex justify-content-between small text-muted mt-1" style="font-size: 0.75rem;">
+										<span>
+											<i class="bi bi-play-fill"></i>
+											{{ getWatchedTime(item) }}
+										</span>
+										<span>
+											<i class="bi bi-hourglass-split"></i>
+											-{{ getRemainingTime(item) }}
+										</span>
+										<span>Tot: {{ getTotalTime(item) }}</span>
+									</div>
+								</div>
+							</div>
+
+							<!-- Right: Poster -->
+							<div class="flex-shrink-0 position-relative" style="width: 92px;">
+								<!-- For playback, we display the show or movie poster. -->
+								<app-poster [tmdbId]="getItemTmdbId(item)" [type]="contentType() === 'episodes' ? 'shows' : 'movies'" [fill]="true"></app-poster>
+							</div>
+						</div>
+					</div>
+				</div>
+			}
+		</div>
+	} @else {
+		<div class="d-flex justify-content-center p-5">
+			@if (refreshSignal() % 2 === 0) {
+				<div class="spinner-border" role="status">
+					<span class="visually-hidden">Loading...</span>
+				</div>
+			}
+		</div>
+	}
+
+	@if (selectedContent().size > 0) {
+		<div class="fixed-bottom bg-body-tertiary border-top shadow-lg p-3">
+			<div class="container d-flex justify-content-between align-items-center">
+				<div class="fw-bold">{{ selectedContent().size }} item{{ selectedContent().size === 1 ? '' : 's' }} selected</div>
+				<div class="d-flex gap-2">
+					@if (isProcessing()) {
+						<div class="d-flex align-items-center text-primary">
+							<span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+							<span role="status">Processing...</span>
+						</div>
+					} @else {
+						<button class="btn btn-outline-danger" (click)="removeProgress()">
+							<i class="bi bi-trash-fill me-1"></i>
+							Remove from "Watching"
+						</button>
+					}
+				</div>
+			</div>
+		</div>
+		<!-- Spacer -->
+		<div style="height: 80px;"></div>
+	}
+</div>

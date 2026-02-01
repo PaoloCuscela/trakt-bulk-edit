@@ -1,0 +1,43 @@
+// gestione dei mixin per gli elementi generali
+@mixin button($color, $background, $border: transparent) {
+	width: auto;
+	border-radius: 8px;
+	min-height: 38px;
+	background-color: $background;
+	border: 1px solid $border;
+	color: $color;
+	padding: 0 20px;
+	@if $border != transparent {
+		&:hover,
+		&:active,
+		&:focus-visible {
+			color: $background !important;
+			background: color-mix(in srgb, $border 90%, #000000) !important;
+			// background: darken($color: $border, $amount: 5%);
+		}
+	} @else {
+		&:hover,
+		&:active,
+		&:focus-visible {
+			color: $color !important;
+			background: color-mix(in srgb, $background 90%, #000000) !important;
+			// background: darken($color: $background, $amount: 5%);
+		}
+	}
+}
+
+@mixin input() {
+	border-radius: 8px;
+	height: 38px;
+	position: relative;
+	padding: 10px 20px;
+	color: $secondary;
+	border: 1px solid $primary;
+	background-color: color-mix(in srgb, $primary 5%, #ffffff);
+	&:disabled {
+		background-color: color-mix(in srgb, $primary 40%, #ffffff);
+	}
+	&:focus {
+		box-shadow: 0 0 0 0.1rem rgba($secondary, 0.25);
+	}
+}
